@@ -17,7 +17,7 @@
       </p>
     <![endif]-->
 
-    <div id="root" style="height:100%"></div>
+    <div id="root" class="anylinejs-container"></div>
 
     <!-- Add your site or application content here -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
@@ -26,7 +26,7 @@
     <script src="../license.js"></script>
     <script src="../index.js"></script>
 
-    <select class="preset-select" onchange="mountAnylineJS(this)">
+    <!-- <select class="preset-select" onchange="mountAnylineJS(this)">
       <option value="" selected>Select Use-Case</option>
       <option value="barcode">Barcode</option>
       <option value="id">MRZ</option>
@@ -40,8 +40,10 @@
       <option value="eCard">eCard</option>
       <option value="lpt">License Plate</option>
       <option value="ocr">Serial Number</option>
-    </select>
+    </select> -->
 
-    <script></script>
+    <script>
+      mountAnylineJS({ value: "id" });
+    </script>
   </body>
 </html>
