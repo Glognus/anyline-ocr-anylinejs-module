@@ -1,6 +1,7 @@
 const root = document.getElementById('root');
 let selectedPreset = undefined;
 let anyline;
+let mirrored = false;
 
 async function mountAnylineJS(preset) {
   try {
@@ -20,33 +21,36 @@ async function mountAnylineJS(preset) {
       alert(JSON.stringify(result.result, null, 2));
     };
 
-    await anyline.startScanning().catch(e => alert(e.message));
+    await appendCameraSwitcher(anyline);
 
-    appendCameraSwitcher(anyline);
+    await anyline.startScanning().catch(e => alert(e.message));
   } catch (e) {
     alert(e.message);
     console.error(e);
   }
 }
 
-function appendCameraSwitcher(anyline) {
+function mirrorCamera() {
+  const newState = !mirrored;
+  anyline.camera.mirrorStream(newState);
+  mirrored = newState;
+}
+
+async function appendCameraSwitcher(anyline) {
   if (document.getElementById('cameraSwitcher')) return;
 
-  navigator.mediaDevices
-    .getUserMedia({ video: true, audio: false })
-    .then(() => {
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-        renderSelect({
-          options: devices
-            .filter(m => m.kind === 'videoinput')
-            .map(camera => ({
-              text: camera.label,
-              value: camera.deviceId,
-            })),
-          onSelect: deviceId => anyline.setCamera(deviceId),
-        });
-      });
-    });
+  await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  renderSelect({
+    options: devices
+      .filter(m => m.kind === 'videoinput')
+      .map(camera => ({
+        text: camera.label,
+        value: camera.deviceId,
+      }))
+      .reduce((acc, camera) => [...acc, camera], [{ text: 'switch cam' }]),
+    onSelect: deviceId => deviceId && anyline.camera.setCamera(deviceId),
+  });
 }
 
 function renderSelect({ options, onSelect }) {
@@ -75,7 +79,7 @@ function remountAnylineJS() {
 
 async function enableFlash() {
   try {
-    await anyline.activateFlash(true);
+    await anyline.camera.activateFlash(true);
   } catch (e) {
     alert(e.message);
   }
@@ -83,7 +87,7 @@ async function enableFlash() {
 
 async function disableFlash() {
   try {
-    await anyline.activateFlash(false);
+    await anyline.camera.activateFlash(false);
   } catch (e) {
     alert(e.message);
   }
@@ -91,7 +95,7 @@ async function disableFlash() {
 
 async function refocus() {
   try {
-    await anyline.refocus();
+    await anyline.camera.refocus();
   } catch (e) {
     alert(e.message);
   }
